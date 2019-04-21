@@ -1,5 +1,7 @@
 FROM alpine
 
+WORKDIR /tmp
+
 ENV BUILD_DEPS="gettext"  \
     RUNTIME_DEPS="libintl"
 
@@ -19,8 +21,9 @@ ADD https://www.cnrancher.com/download/rke/rke_linux-amd64 /usr/bin/rke
 ADD https://www.cnrancher.com/download/kubectl/kubectl_amd64-linux /usr/bin/kubectl
 RUN curl -LS -O https://storage.googleapis.com/kubernetes-helm/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz 
 
-RUN tar -zxf helm-*.tar.gz && ls \
-    && rm -rf helm-*.tar.gz \
+RUN tar -zxf helm-*.tar.gz && ls 
+
+RUN rm -rf helm-*.tar.gz \
     && cd helm* \
     && cp helm /usr/local/bin
 
