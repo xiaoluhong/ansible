@@ -17,11 +17,11 @@ RUN echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/latest-stable//main/" > /e
 COPY bashrc /root/.bashrc
 ADD https://www.cnrancher.com/download/rke/rke_linux-amd64 /usr/bin/rke
 ADD https://www.cnrancher.com/download/kubectl/kubectl_amd64-linux /usr/bin/kubectl
-RUN curl -LS -O https://storage.googleapis.com/kubernetes-helm/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | \
-    grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz \
+RUN curl -LS -O https://storage.googleapis.com/kubernetes-helm/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz \
     && tar -zxf helm-*.tar.gz \
     && rm -rf helm-*.tar.gz \
-    && cd helm* && cp helm /usr/local/bin
+    && cd helm* \
+    && cp helm /usr/local/bin
 
 RUN chmod +x /usr/local/bin/helm ; \
     chmod +x /usr/local/bin/kubectl ; \
