@@ -16,6 +16,7 @@ RUN echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/latest-stable//main/" > /e
         openssl \
         busybox-extras \
         python \
+        sshpass \
         bash \
         bash-completion \
     && set -x \
