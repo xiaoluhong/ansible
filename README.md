@@ -1,3 +1,3 @@
 # ansible
 
-ansible bash
+ansible rancher
