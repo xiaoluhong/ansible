@@ -25,11 +25,11 @@ RUN     curl -LsS https://github.com/rancher/rke/releases/download/$(curl -s htt
     &&  chmod +x /usr/local/bin/rke /usr/local/bin/kubectl \
     &&  rm -rf /tmp
 
-RUN     curl -LsS -O https://get.helm.sh/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz \
-    &&  tar -zxf helm-*.tar.gz \
-    &&  rm -rf helm-*.tar.gz \
-    &&  cd linux-amd64 \
-    &&  cp helm /usr/local/bin \
+RUN     curl -LsS -o /tmp/helm.tar.gz https://get.helm.sh/helm-v3.1.2-linux-amd64.tar.gz \
+    &&  cd /tmp \
+    &&  tar -zxvf helm.tar.gz \
+    &&  rm -rf helm.tar.gz \
+    &&  mv linux-amd64/helm /usr/local/bin/helm \
     &&  chmod +x /usr/local/bin/helm \
     &&  rm -rf /tmp
 
