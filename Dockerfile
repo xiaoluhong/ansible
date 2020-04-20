@@ -1,15 +1,14 @@
-FROM alpine
+FROM alpine:3.10
 
-ENV BUILD_DEPS="gettext"  \
-    RUNTIME_DEPS="libintl"
+ARG RKE_VERSION=v1.0.0
+ARG HELM_VERSION=v3.1.2
 
 WORKDIR /tmp
 
-RUN echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/latest-stable//main/" > /etc/apk/repositories; \
-    echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/latest-stable/community/" >> /etc/apk/repositories; \
-    apk add --no-cache \
+RUN apk add --no-cache \
         ansible \
         openssh \
+        openssl \
         curl \
         wget \
         openssl \
@@ -18,29 +17,33 @@ RUN echo "https://mirrors.tuna.tsinghua.edu.cn/alpine/latest-stable//main/" > /e
         sshpass \
         bash \
         bash-completion \
+        jq \
     &&  set -x \
-    &&  apk add --update $RUNTIME_DEPS \
-    &&  apk add --virtual build_deps $BUILD_DEPS \
-    &&  cp /usr/bin/envsubst /usr/local/bin/envsubst \
-    &&  apk del build_deps \
+    &&  apk add --update \
     &&  mkdir -p /root/ansible \
     &&  rm -rf /var/cache/apk/* /tmp/* \
-    &&  sed -i 's:bin/ash:bin/bash:g' /etc/passwd
+    &&  sed -i 's:bin/ash:bin/bash:g' /etc/passwd \
+    &&  cat /etc/profile \
+    &&  mkdir -p ~/.ssh/
 
-COPY    bashrc /root/.bashrc
-
-RUN     curl -LsS https://github.com/rancher/rke/releases/download/$(curl -s https://api.github.com/repos/rancher/rke/releases/latest | grep tag_name | cut -d '"' -f 4)/rke_linux-amd64 -o /usr/local/bin/rke \
-    &&  curl -LsS https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+RUN     curl -LsS https://github.com/rancher/rke/releases/download/${RKE_VERSION}/rke_linux-amd64 -o /usr/local/bin/rke \
+    &&  curl -LsS https://storage.googleapis.com/kubernetes-release/release/v$( curl -LSs -s https://api.github.com/repos/kubernetes/kubernetes/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}'|sort -r  -u -t "." -k1n,1 -k2n,2 -k3n,3 | tail -1 )/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
     &&  chmod +x /usr/local/bin/rke /usr/local/bin/kubectl \
     &&  rm -rf /tmp
 
-RUN     curl -LsS -O https://get.helm.sh/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep tag_name | cut -d '"' -f 4)-linux-amd64.tar.gz \
-    &&  tar -zxf helm-*.tar.gz \
-    &&  rm -rf helm-*.tar.gz \
-    &&  cd linux-amd64 \
-    &&  cp helm /usr/local/bin \
+RUN     curl -LsS -o /tmp/helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz \
+    &&  cd /tmp \
+    &&  tar -zxvf helm.tar.gz \
+    &&  rm -rf helm.tar.gz \
+    &&  mv linux-amd64/helm /usr/local/bin/helm \
     &&  chmod +x /usr/local/bin/helm \
     &&  rm -rf /tmp
+
+# 配置自动补全
+COPY    bashrc /root/.bashrc
+COPY    ansible-completion.bash /etc/profile.d/ansible-completion.bash
+
+RUN     cat /root/.bashrc >> /etc/profile && mkdir -p /tmp
 
 WORKDIR /etc/ansible
 VOLUME ["/root/ansible"]
