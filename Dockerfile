@@ -24,11 +24,10 @@ RUN apk add --no-cache \
     &&  rm -rf /var/cache/apk/* /tmp/* \
     &&  sed -i 's:bin/ash:bin/bash:g' /etc/passwd \
     &&  cat /etc/profile \
-    &&  mkdir -p ~/.ssh/
+    &&  mkdir -p /root/.ssh/
 
-RUN     curl -LsS https://github.com/rancher/rke/releases/download/${RKE_VERSION}/rke_linux-amd64 -o /usr/local/bin/rke \
-    &&  curl -LsS https://storage.googleapis.com/kubernetes-release/release/v$( curl -LSs -s https://api.github.com/repos/kubernetes/kubernetes/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}'|sort -r  -u -t "." -k1n,1 -k2n,2 -k3n,3 | tail -1 )/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
-    &&  chmod +x /usr/local/bin/rke /usr/local/bin/kubectl \
+RUN     curl -LsS https://storage.googleapis.com/kubernetes-release/release/v$( curl -LSs -s https://api.github.com/repos/kubernetes/kubernetes/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}'|sort -r  -u -t "." -k1n,1 -k2n,2 -k3n,3 | tail -1 )/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+    &&  chmod +x /usr/local/bin/kubectl \
     &&  rm -rf /tmp
 
 RUN     curl -LsS -o /tmp/helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz \
@@ -42,6 +41,7 @@ RUN     curl -LsS -o /tmp/helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-l
 # 配置自动补全
 COPY    bashrc /root/.bashrc
 COPY    ansible-completion.bash /etc/profile.d/ansible-completion.bash
+COPY    config /root/.ssh/
 
 RUN     cat /root/.bashrc >> /etc/profile && mkdir -p /tmp
 
