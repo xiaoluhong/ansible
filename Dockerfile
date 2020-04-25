@@ -1,7 +1,7 @@
 FROM alpine:3.10
 
 ARG RKE_VERSION=v1.0.0
-ARG HELM_VERSION=v3.1.2
+ARG HELM_VERSION=v3.2.0
 
 WORKDIR /tmp
 
@@ -13,13 +13,12 @@ RUN apk add --no-cache \
         wget \
         openssl \
         busybox-extras \
-        python \
         sshpass \
         bash \
         bash-completion \
         jq \
+    &&  apk del --purge \
     &&  set -x \
-    &&  apk add --update \
     &&  mkdir -p /root/ansible \
     &&  rm -rf /var/cache/apk/* /tmp/* \
     &&  sed -i 's:bin/ash:bin/bash:g' /etc/passwd \
@@ -43,7 +42,8 @@ COPY    bashrc /root/.bashrc
 COPY    ansible-completion.bash /etc/profile.d/ansible-completion.bash
 COPY    config /root/.ssh/
 
-RUN     cat /root/.bashrc >> /etc/profile && mkdir -p /tmp
+RUN     cat /root/.bashrc >> /etc/profile \
+    &&  mkdir -p /tmp
 
 WORKDIR /etc/ansible
 VOLUME ["/root/ansible"]
