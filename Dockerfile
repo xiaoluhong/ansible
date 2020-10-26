@@ -1,6 +1,6 @@
-FROM alpine:3.10
+FROM alpine
 
-ARG RKE_VERSION=v1.0.0
+ARG RKE_VERSION=v1.2.1
 ARG HELM_VERSION=v3.2.0
 
 WORKDIR /tmp
@@ -19,6 +19,7 @@ RUN apk add --no-cache \
         jq \
     &&  apk del --purge \
     &&  set -x \
+    &&  ansible-galaxy install ahuffman.resolv \
     &&  mkdir -p /root/ansible \
     &&  rm -rf /var/cache/apk/* /tmp/* \
     &&  sed -i 's:bin/ash:bin/bash:g' /etc/passwd \
